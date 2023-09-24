@@ -6,8 +6,16 @@ public class PlayerMovement : MonoBehaviour
 {
     Rigidbody componentRigidbody;
     AudioSource componentAudioSource;
+
     [SerializeField] float thrustForce = 1000f; 
     [SerializeField] float rotationPerSecond = 90f;
+
+    [SerializeField] AudioClip mainEngineSFX;
+
+    [SerializeField] ParticleSystem mainBoosterParticleSystem;
+    [SerializeField] ParticleSystem leftBoosterParticleSystem;
+    [SerializeField] ParticleSystem rightBoosterParticleSystem;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -26,34 +34,94 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.Space))
         {
-            componentRigidbody.AddRelativeForce(Vector3.up * thrustForce * Time.deltaTime);
-            if (!componentAudioSource.isPlaying)
-            {
-                componentAudioSource.Play();
-            }
+            StartMainThrusting();
+
         }
-        else 
+        else
         {
-            componentAudioSource.Stop();
+            StopMainThrusting();
         }
+    }
+    void StopMainThrusting()
+    {
+        componentAudioSource.Stop();
+        mainBoosterParticleSystem.Stop();
+    }
+
+    void StartMainThrusting()
+    {
+        componentRigidbody.AddRelativeForce(Vector3.up * thrustForce * Time.deltaTime);
+        if (!componentAudioSource.isPlaying)
+        {
+            componentAudioSource.PlayOneShot(mainEngineSFX);
+        }
+        if (!mainBoosterParticleSystem.isPlaying)
+        {
+            mainBoosterParticleSystem.Play();
+        }
+    }
+
+    public void StopAllBoosters()
+    {
+        StopMainThrusting();
+        StopLeftBooster();
+        StopRightBooster();
     }
 
     void ProcessRotation()
     {
         if ((Input.GetKey(KeyCode.RightArrow)) && (Input.GetKey(KeyCode.LeftArrow)))
         {
-            Debug.Log("ROTATION ERROR");
+            StopRightBooster();
+            StopLeftBooster();
         }
         else
         {
             if (Input.GetKey(KeyCode.RightArrow))
             {
-                ApplyRotation(-rotationPerSecond);
-            };
+                ActiveteRightBooster();
+            }
+            else
+            {
+                StopRightBooster();
+            }
+
             if (Input.GetKey(KeyCode.LeftArrow))
             {
-                ApplyRotation(rotationPerSecond);
-            };
+                ActivateLeftBooster();
+            }
+            else
+            {
+                StopLeftBooster();
+            }
+        }
+    }
+
+    void StopLeftBooster()
+    {
+        leftBoosterParticleSystem.Stop();
+    }
+
+    void ActivateLeftBooster()
+    {
+        ApplyRotation(rotationPerSecond);
+        if (!leftBoosterParticleSystem.isPlaying)
+        {
+            leftBoosterParticleSystem.Play();
+        }
+    }
+
+    void StopRightBooster()
+    {
+        rightBoosterParticleSystem.Stop();
+    }
+
+    void ActiveteRightBooster()
+    {
+        ApplyRotation(-rotationPerSecond);
+        if (!rightBoosterParticleSystem.isPlaying)
+        {
+            rightBoosterParticleSystem.Play();
         }
     }
 
